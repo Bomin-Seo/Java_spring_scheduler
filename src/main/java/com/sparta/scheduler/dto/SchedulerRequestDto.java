@@ -9,13 +9,10 @@ import java.util.Date;
 @Getter
 @Setter
 @NoArgsConstructor
-public class SchedulerResquestDto {
-    private int id;
+public class SchedulerRequestDto {
     private String title;
     private String contents;
     private String admin;
-    private int password;
+    private String password;
     private Date date;
-
-
 }

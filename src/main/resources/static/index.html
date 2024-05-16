@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Memo Service</title>
+    <title>Scheduler</title>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
@@ -23,6 +23,14 @@
         .wrap {
             width: 538px;
             margin: 10px auto;
+        }
+
+        #title{
+            height: 15px;
+        }
+
+        #admin{
+            height: 15px;
         }
 
         #contents {
@@ -48,14 +56,14 @@
             z-index: -1;
             top: 0px;
             width: 100%;
-            height: 428px;
+            height: 550px;
             background-color: #339af0;
         }
 
         .background-body {
             position: fixed;
             z-index: -1;
-            top: 428px;
+            top: 550px;
             height: 100%;
             width: 100%;
             background-color: #dee2e6;
@@ -158,6 +166,22 @@
             display: none;
         }
 
+        .horizontal-input {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .horizontal-input img {
+            width: 30px;
+            height: auto;
+            cursor: pointer;
+        }
+
+        textarea::-webkit-scrollbar {
+            display: none;
+        }
+
         .contents textarea.te-edit {
             border-right: none;
             border-top: none;
@@ -206,10 +230,10 @@
         }
     </style>
     <script>
-        // 사용자가 내용을 올바르게 입력하였는지 확인합니다.
-        function isValidContents(contents) {
+        function isValidContents(contents, flag) {
             if (contents == '') {
-                alert('내용을 입력해주세요');
+                if (flag = "title"){alert('제목을 입력해주세요');}
+                else {alert('내용을 입력해주세요');}
                 return false;
             }
             if (contents.trim().length > 140) {
@@ -219,22 +243,9 @@
             return true;
         }
 
-        // 익명의 username을 만듭니다.
-        function genRandomName(length) {
-            let result = '';
-            let characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            let charactersLength = characters.length;
-            for (let i = 0; i < length; i++) {
-                let number = Math.random() * charactersLength;
-                let index = Math.floor(number);
-                result += characters.charAt(index);
-            }
-            return result;
-        }
-
         // 수정 버튼을 눌렀을 때, 기존 작성 내용을 textarea 에 전달합니다.
         // 숨길 버튼을 숨기고, 나타낼 버튼을 나타냅니다.
-        function editPost(id) {
+        function editSchedule(id) {
             showEdits(id);
             let contents = $(`#${id}-contents`).text().trim();
             $(`#${id}-textarea`).val(contents);
@@ -248,44 +259,39 @@
             $(`#${id}-contents`).hide();
             $(`#${id}-edit`).hide();
         }
-
+/*
         $(document).ready(function () {
-            // HTML 문서를 로드할 때마다 실행합니다.
-            getMessages();
-        })
+            getSchedules();
+        })*/
 
-        // 메모를 불러와서 보여줍니다.
-        function getMessages() {
-            // 1. 기존 메모 내용을 지웁니다.
+        function getSchedules() {
             $('#cards-box').empty();
-            // 2. 메모 목록을 불러와서 HTML로 붙입니다.
             $.ajax({
                 type: 'GET',
-                url: '/api/memos',
+                url: '/api/schedules',
                 success: function (response) {
                     for (let i = 0; i < response.length; i++) {
-                        let message = response[i];
-                        let id = message['id'];
-                        let username = message['username'];
-                        let contents = message['contents'];
-                        let modifiedAt = message['modifiedAt'];
-                        addHTML(id, username, contents, modifiedAt);
+                        let schedule = response[i];
+                        let title = schedule['title']
+                        let admin = schedule['admin'];
+                        let contents = schedule['contents'];
+                        let date = schedule['date'];
+                        addHTML(title, contents, admin, date);
                     }
                 }
             })
         }
 
-        // 메모 하나를 HTML로 만들어서 body 태그 내 원하는 곳에 붙입니다.
-        function addHTML(id, username, contents, modifiedAt) {
-            // 1. HTML 태그를 만듭니다.
-            let tempHtml = `<div class="card">
-                <!-- date/username 영역 -->
+
+        function addHTML(id, title, contents, admin, date) {
+            let tempHtml = `<div id="${id}" class="card">
+                <!-- date/admin 영역 -->
                 <div class="metadata">
-                    <div class="date">
-                        ${modifiedAt}
+                    <div class="title" style="font-size: 20px;">
+                        ${title} \
                     </div>
-                    <div id="${id}-username" class="username">
-                        ${username}
+                    <div id="${id}-admin" class="admin">
+                        작성 날짜 : ${date}  관리자 : ${admin}
                     </div>
                 </div>
                 <!-- contents 조회/수정 영역-->
@@ -299,81 +305,105 @@
                 </div>
                 <!-- 버튼 영역-->
                 <div class="footer">
-                    <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editPost('${id}')">
-                    <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('${id}')">
+                    <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
+                    <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
                     <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
                 </div>
             </div>`;
-            // 2. #cards-box 에 HTML을 붙인다.
-            $('#cards-box').append(tempHtml);
-        }
-
-        // 메모를 생성합니다.
-        function writePost() {
-            // 1. 작성한 메모를 불러옵니다.
-            let contents = $('#contents').val();
-
-            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
-            if (isValidContents(contents) == false) {
-                return;
-            }
-            // 3. genRandomName 함수를 통해 익명의 username을 만듭니다.
-            let username = genRandomName(10);
-
-            // 4. 전달할 data JSON으로 만듭니다.
-            let data = {'username': username, 'contents': contents};
-
-            // 5. POST /api/memos 에 data를 전달합니다.
-            $.ajax({
-                type: "POST",
-                url: "/api/memos",
-                contentType: "application/json",
-                data: JSON.stringify(data),
-                success: function (response) {
-                    alert('메시지가 성공적으로 작성되었습니다.');
-                    window.location.reload();
+                    $('#cards-box').append(tempHtml);
                 }
-            });
-        }
 
-        // 메모를 수정합니다.
-        function submitEdit(id) {
-            // 1. 작성 대상 메모의 username과 contents 를 확인합니다.
-            let username = $(`#${id}-username`).text().trim();
-            let contents = $(`#${id}-textarea`).val().trim();
-
-            // 2. 작성한 메모가 올바른지 isValidContents 함수를 통해 확인합니다.
-            if (isValidContents(contents) == false) {
-                return;
-            }
-
-            // 3. 전달할 data JSON으로 만듭니다.
-            let data = {'username': username, 'contents': contents};
-
-            // 4. PUT /api/memos/{id} 에 data를 전달합니다.
+        function getMessages() {
+            // 1. 기존 메모 내용을 지웁니다.
+            $('#cards-box').empty();
+            // 2. 메모 목록을 불러와서 HTML로 붙입니다.
             $.ajax({
-                type: "PUT",
-                url: `/api/memos/${id}`,
-                contentType: "application/json",
-                data: JSON.stringify(data),
+                type: 'GET',
+                url: '/api/schedules',
                 success: function (response) {
-                    alert('메시지 변경에 성공하였습니다.');
-                    window.location.reload();
-                }
-            });
-        }
-
-        // 메모를 삭제합니다.
-        function deleteOne(id) {
-            // 1. DELETE /api/memos/{id} 에 요청해서 메모를 삭제합니다.
-            $.ajax({
-                type: "DELETE",
-                url: `/api/memos/${id}`,
-                success: function (response) {
-                    alert('메시지 삭제에 성공하였습니다.');
-                    window.location.reload();
+                    for (let i = 0; i < response.length; i++) {
+                        let message = response[i];
+                        let id = message['id'];
+                        let title = message['title'];
+                        let contents = message['contents'];
+                        let admin = message['admin'];
+                        let date = message['date'];
+                        addHTML(id, title, contents, admin, date);
+                    }
                 }
             })
+        }
+
+        $(document).ready(function () {
+            getMessages();
+        })
+
+        function writeSchedule() {
+            let title = $('#title').val();
+            let contents = $('#contents').val();
+            let admin = $('#admin').val();
+            let date = $('#date').val();
+            let password = $('#password').val();
+
+            if (isValidContents(title, "title") === false) {return;}
+            if (isValidContents(contents, "contents") === false) {return;}
+
+            if (!title || !contents || !admin || !date || !password) {
+                alert('모든 필드를 입력해주세요.');
+                return;
+            }
+            let data = {'title': title, 'contents': contents, 'admin': admin, 'date': date, 'password': password};
+            $.ajax({
+                type: "POST",
+                url: "/api/schedules",
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('일정이 성공적으로 작성되었습니다.');
+                    window.location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('일정을 작성하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function submitEdit(id) {
+            let admin = $(`#${id}-admin`).text().trim();
+            let contents = $(`#${id}-textarea`).val().trim();
+
+            if (isValidContents(contents) === false) {
+                return;
+            }
+
+            let data = {'admin': admin, 'contents': contents};
+
+            $.ajax({
+                type: "PUT",
+                url: `/api/schedules/${id}`,
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('일정 변경에 성공하였습니다.');
+                    window.location.reload();
+                }
+            });
+        }
+
+        function deleteSchedule(id) {
+            $.ajax({
+                type: "DELETE",
+                url: `/api/schedules/${id}`,
+                success: function (response) {
+                    alert('일정 삭제에 성공하였습니다.');
+                    $(`#${id}`).remove();
+                },
+                error: function (xhr, status, error) {
+                    alert('일정을 삭제하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
         }
     </script>
 </head>
@@ -387,17 +417,24 @@
 </div>
 <div class="wrap">
     <div class="header">
-        <h2>Memo</h2>
+        <h2>Schedule</h2>
         <p>
-            공유하고 싶은 소식을 입력해주세요.
+            일정을 입력해주세요.
         </p>
     </div>
     <div class="area-write">
-        <textarea class="field" placeholder="공유하고 싶은 소식을 입력해주세요" name="contents" id="contents" cols="30"
-                  rows="10"></textarea>
-        <!--            <button class="btn btn-danger" onclick="writePost()">작성하기</button>-->
-        <img src="images/send.png" alt="" onclick="writePost()">
+
+        <textarea class="field" placeholder="제목을 입력해주세요" name="title" id="title" cols="30" rows="1"></textarea>
+        <textarea class="field" placeholder="내용을 입력해주세요" name="contents" id="contents" cols="30" rows="10"></textarea>
+        <textarea class="field" placeholder="담당자를 입력해주세요" name="admin" id="admin" cols="30" rows="1"></textarea>
     </div>
+    <div class="horizontal-input">
+        <input type="date" class="field" name="date" id="date">
+        <input type="password" class="field" placeholder="비밀번호를 입력해주세요" name="password" id="password">
+        <img src="images/send.png" alt="" onclick="writeSchedule()">
+    </div>
+
+
     <div id="cards-box" class="area-read">
         <div class="card">
             <!-- date/username 영역 -->
@@ -414,10 +451,10 @@
 
             </div>
             <!-- 버튼 영역-->
-            <div class="footer">
-                <img id="1-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editPost('1')">
-                <img id="1-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteOne('1')">
-                <img id="1-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('1')">
+            <div id="id" class="footer">
+                <img class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
+                <img class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
+                <img class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
             </div>
         </div>
     </div>
@@ -425,3 +462,5 @@
 </body>
 
 </html>
+
+

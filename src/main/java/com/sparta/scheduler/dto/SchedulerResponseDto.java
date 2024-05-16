@@ -7,11 +7,11 @@ import java.util.Date;
 
 @Getter
 public class SchedulerResponseDto {
-    private int id;
+    private final Long id;
     private final String title;
     private final String contents;
     private final String admin;
-    private final int password;
+    private final String password;
     private final Date date;
 
     public SchedulerResponseDto(Schedule schedule) {
