@@ -8,6 +8,7 @@
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500&display=swap" rel="stylesheet">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
 
     <style>
         @import url(//spoqa.github.io/spoqa-han-sans/css/SpoqaHanSans-kr.css);
@@ -40,6 +41,7 @@
         .area-write {
             position: relative;
             width: 538px;
+
         }
 
         .area-write img {
@@ -56,14 +58,14 @@
             z-index: -1;
             top: 0px;
             width: 100%;
-            height: 550px;
+            height: 520px;
             background-color: #339af0;
         }
 
         .background-body {
             position: fixed;
             z-index: -1;
-            top: 550px;
+            top: 520px;
             height: 100%;
             width: 100%;
             background-color: #dee2e6;
@@ -102,7 +104,7 @@
         }
 
         textarea.field {
-            width: 502px !important;
+            width: 536px !important;
             height: 146px;
             border-radius: 5px;
             background-color: #ffffff;
@@ -112,16 +114,13 @@
         }
 
         textarea.field::placeholder {
-            width: 216px;
-            height: 16px;
             font-family: 'Noto Sans KR', sans-serif;
             font-size: 16px;
             font-weight: normal;
             font-stretch: normal;
             font-style: normal;
-            line-height: 1;
-            letter-spacing: -0.96px;
-            text-align: left;
+            line-height: 0;
+            text-align: center;
             color: #868e96;
         }
 
@@ -140,7 +139,7 @@
             font-weight: normal;
             font-stretch: normal;
             font-style: normal;
-            line-height: 1;
+            line-height: 0;
             letter-spacing: -0.77px;
             text-align: left;
             color: #adb5bd;
@@ -176,6 +175,8 @@
             width: 30px;
             height: auto;
             cursor: pointer;
+            align-self: center;
+            margin-left: 6px;
         }
 
         textarea::-webkit-scrollbar {
@@ -243,37 +244,51 @@
             return true;
         }
 
+
         function editSchedule(id) {
-            let password = prompt("비밀번호를 입력하세요:");
-            if (password === null) {return;}
-            let data = {'password': password};
-            $.ajax({
-                type: "POST",
-                url: `/api/schedules/${id}/validate-password`,
-                contentType: "application/json",
-                data: JSON.stringify(data),
-                success: function (response) {
-                    let contents = $(`#${id}-contents`).text().trim();
-                    $(`#${id}-textarea`).val(contents);
-                },
-                error: function (xhr, status, error) {alert('비밀번호가 일치하지 않습니다.');}
-            });
+            showEdits(id);
+            let contents = $(`#${id}-contents`).text().trim();
+            let title = $(`#${id}-title`).text().trim();
+            let admin = $(`#${id}-admin`).text().trim();
+
+            $(`#${id}-contents-textarea`).val(contents);
+            $(`#${id}-title-textarea`).val(title);
+            $(`#${id}-admin-textarea`).val(admin);
+        }
+
+        function showEdits(id) {
+            $(`#${id}-editarea`).show();
+            $(`#${id}-submit`).show();
+            $(`#${id}-delete`).show();
+
+            $(`#${id}-contents`).hide();
+            $(`#${id}-title`).hide();
+            $(`#${id}-admin`).hide();
+            $(`#${id}-edit`).hide();
         }
 
         function submitEdit(id) {
-            let admin = $(`#${id}-admin`).text().trim();
-            let contents = $(`#${id}-textarea`).val().trim();
-            let password = prompt("비밀번호를 입력하세요:");
-            if (password === null) {return;}
-            let data = {'admin': admin, 'contents': contents, 'password': password};
+            let title = $(`#${id}-title-textarea`).val().trim();
+            let contents = $(`#${id}-contents-textarea`).val().trim();
+            let admin = $(`#${id}-admin-textarea`).val().trim();
+
+            let inputPassword = prompt("비밀번호를 입력하세요 : ");
+            if (inputPassword === null) {
+                return null;
+            }
+            let data = {'title': title, 'admin': admin, 'contents': contents, 'inputPassword': inputPassword};
             $.ajax({
                 type: "PUT",
-                url: `/api/schedules/${id}`,
+                url: `/api/schedules/${id}?password=${inputPassword}`,
                 contentType: "application/json",
                 data: JSON.stringify(data),
                 success: function (response) {
-                    alert('일정 변경에 성공하였습니다.');
-                    window.location.reload();
+                    if (response === true) {
+                        alert('일정 변경에 성공하였습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
                 },
                 error: function (xhr, status, error) {
                     alert('일정을 변경하는 중 오류가 발생했습니다.');
@@ -282,35 +297,63 @@
             });
         }
 
+        function deleteSchedule(id) {
+            let inputPassword = prompt("비밀번호를 입력하세요 : ");
+            if (inputPassword === null) {
+                return null;
+            }
+            $.ajax({
+                type: "DELETE",
+                url: `/api/schedules/${id}?password=${inputPassword}`,
+                success: function (response) {
+                    if (response === true) {
+                        alert('일정 삭제에 성공하였습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('일정을 삭제하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
         function addHTML(id, title, contents, admin, date) {
             let tempHtml = `<div id="${id}" class="card">
-                <!-- date/admin 영역 -->
-                <div class="metadata">
-                    <div class="title" style="font-size: 20px;">
-                        ${title} \
-                    </div>
-                    <div id="${id}-admin" class="admin">
-                        작성 날짜 : ${date}  관리자 : ${admin}
-                    </div>
+            <!-- title/admin 영역 -->
+            <div class="metadata">
+                <div id="${id}-title" class="title" style="font-size: 20px;">
+                    ${title}
                 </div>
-                <!-- contents 조회/수정 영역-->
-                <div class="contents">
-                    <div id="${id}-contents" class="text">
-                        ${contents}
-                    </div>
-                    <div id="${id}-editarea" class="edit">
-                        <textarea id="${id}-textarea" class="te-edit" name="" id="" cols="30" rows="5"></textarea>
-                    </div>
+                <div id="${id}-admin" class="admin">
+                    관리자 : ${admin}
                 </div>
-                <!-- 버튼 영역-->
-                <div class="footer">
-                    <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
-                    <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
-                    <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
+                <div id="${id}-date" class="date">
+                    작성 날짜 : ${date}
                 </div>
-            </div>`;
-                    $('#cards-box').append(tempHtml);
-                }
+            </div>
+            <!-- contents 조회/수정 영역 -->
+            <div class="contents">
+                <div id="${id}-contents" class="text">
+                    ${contents}
+                </div>
+                <div id="${id}-editarea" class="edit">
+                    <textarea id="${id}-title-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
+                    <textarea id="${id}-admin-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
+                    <textarea id="${id}-contents-textarea" class="te-edit" name="" cols="30" rows="5"></textarea>
+                </div>
+            </div>
+            <!-- 버튼 영역 -->
+            <div class="footer">
+                <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
+                <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
+                <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
+            </div>
+        </div>`;
+            $('#cards-box').append(tempHtml);
+        }
 
         function getMessages() {
             $('#cards-box').empty();
@@ -366,28 +409,7 @@
             });
         }
 
-        function deleteSchedule(id) {
-            let inputPassword = prompt("비밀번호를 입력하세요 : ");
-            if (inputPassword === null) {
-                return null;
-            }
-            $.ajax({
-                type: "DELETE",
-                url: `/api/schedules/${id}?password=${inputPassword}`,
-                success: function (response) {
-                    if (response === true) {
-                        alert('일정 삭제에 성공하였습니다.');
-                        $(`#${id}`).remove();
-                    } else {
-                        alert('비밀번호가 일치하지 않습니다.');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    alert('일정을 삭제하는 중 오류가 발생했습니다.');
-                    console.error(xhr.responseText);
-                }
-            });
-        }
+
     </script>
 </head>
 
@@ -399,13 +421,13 @@
 
 </div>
 <div class="wrap">
-    <div class="header">
+    <div class="header text-center">
         <h2>Schedule</h2>
-        <p>
-            일정을 입력해주세요.
-        </p>
+        <p class="mb-2">일정을 입력해주세요.</p>
+        <button type="button" class="btn btn-primary" onclick="window.location.href='/schedules.html'">전체 일정 조회하기</button>
+
     </div>
-    <div class="area-write">
+    <div class="area-write mt-4">
 
         <textarea class="field" placeholder="제목을 입력해주세요" name="title" id="title" cols="30" rows="1"></textarea>
         <textarea class="field" placeholder="내용을 입력해주세요" name="contents" id="contents" cols="30" rows="10"></textarea>

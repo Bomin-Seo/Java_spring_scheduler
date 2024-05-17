@@ -43,7 +43,7 @@ public class SchedulerRepository {
     }
 
     public List<SchedulerResponseDto> getAllSchedules() {
-        String sql = "SELECT * FROM schedule";
+        String sql = "SELECT * FROM schedule ORDER BY date DESC";
 
         return jdbcTemplate.query(sql, new RowMapper<SchedulerResponseDto>() {
             public SchedulerResponseDto mapRow(ResultSet rs, int rowNum) throws SQLException {
@@ -52,6 +52,7 @@ public class SchedulerRepository {
             }
         });
     }
+
 
     public Schedule findById(Long id) {
         String sql = "SELECT * FROM schedule WHERE id = ?";
@@ -72,10 +73,11 @@ public class SchedulerRepository {
         return schedule;
     }
 
-    public void update(Long id, SchedulerRequestDto requestDto) {
+    public void update(Long id, SchedulerRequestDto requestDto, Date currentdate, String password) {
         String sql = "UPDATE schedule SET title=?, contents=?, admin=?, password=?, date=? WHERE id=?";
-        jdbcTemplate.update(sql, requestDto.getTitle(), requestDto.getContents(), requestDto.getAdmin(), requestDto.getPassword(), requestDto.getDate(), id);
+        jdbcTemplate.update(sql, requestDto.getTitle(), requestDto.getContents(), requestDto.getAdmin(), password, currentdate, id);
     }
+
 
     public void delete(Long id) {
         String sql = "DELETE FROM schedule WHERE id = ?";
