@@ -246,6 +246,9 @@
 
 
         function editSchedule(id) {
+            $(`#${id}-title-textarea`).attr("placeholder", "제목을 입력해주세요");
+            $(`#${id}-admin-textarea`).attr("placeholder", "관리자를 입력해주세요");
+            $(`#${id}-contents-textarea`).attr("placeholder", "내용을 입력해주세요");
             showEdits(id);
             let contents = $(`#${id}-contents`).text().trim();
             let title = $(`#${id}-title`).text().trim();
@@ -320,15 +323,18 @@
             });
         }
 
+        function toggleDetails(id) {
+            if (!event.target.matches('.icon-start-edit, .icon-delete, .icon-end-edit')) {
+                $(`#${id}-details`).toggle();
+            }
+        }
+
         function addHTML(id, title, contents, admin, date) {
-            let tempHtml = `<div id="${id}" class="card">
+            let tempHtml = `<div id="${id}" class="card" onclick="toggleDetails('${id}')">
             <!-- title/admin 영역 -->
             <div class="metadata">
                 <div id="${id}-title" class="title" style="font-size: 20px;">
                     ${title}
-                </div>
-                <div id="${id}-admin" class="admin">
-                    관리자 : ${admin}
                 </div>
                 <div id="${id}-date" class="date">
                     작성 날짜 : ${date}
@@ -336,9 +342,6 @@
             </div>
             <!-- contents 조회/수정 영역 -->
             <div class="contents">
-                <div id="${id}-contents" class="text">
-                    ${contents}
-                </div>
                 <div id="${id}-editarea" class="edit">
                     <textarea id="${id}-title-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
                     <textarea id="${id}-admin-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
@@ -350,6 +353,24 @@
                 <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
                 <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
                 <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
+            </div>
+            <div id="${id}-details" class="details" style="display: none;">
+                <div class="metadata">
+                    <div class="title" style="font-size: 20px;">
+                        ${title}
+                    </div>
+                    <div class="admin">
+                        관리자 : ${admin}
+                    </div>
+                    <div class="date">
+                        작성 날짜 : ${date}
+                    </div>
+                </div>
+                <div class="contents">
+                    <div class="text">
+                        ${contents}
+                    </div>
+                </div>
             </div>
         </div>`;
             $('#cards-box').append(tempHtml);
