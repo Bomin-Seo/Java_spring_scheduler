@@ -3,7 +3,7 @@ package com.sparta.scheduler.dto;
 import com.sparta.scheduler.entity.Schedule;
 import lombok.Getter;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Getter
 public class SchedulerResponseDto {
@@ -12,7 +12,8 @@ public class SchedulerResponseDto {
     private final String contents;
     private final String admin;
     private final String password;
-    private final Date date;
+    private final LocalDateTime createdAt; // 변경된 필드명
+    private final LocalDateTime modifiedAt;
 
     public SchedulerResponseDto(Schedule schedule) {
         this.id = schedule.getId();
@@ -20,6 +21,7 @@ public class SchedulerResponseDto {
         this.contents = schedule.getContents();
         this.admin = schedule.getAdmin();
         this.password = schedule.getPassword();
-        this.date = schedule.getDate();
+        this.createdAt = schedule.getCreatedAt();
+        this.modifiedAt = schedule.getModifiedAt();
     }
 }

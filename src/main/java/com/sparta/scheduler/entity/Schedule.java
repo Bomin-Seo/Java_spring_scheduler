@@ -2,22 +2,18 @@ package com.sparta.scheduler.entity;
 
 import com.sparta.scheduler.dto.SchedulerRequestDto;
 import jakarta.persistence.*;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.sql.Date;
+import java.time.LocalDateTime;
 
 @Setter
 @Getter
 @Entity
 @Table(name = "schedule")
 @NoArgsConstructor
-public class Schedule {
+public class Schedule extends Timestamped{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -34,21 +30,21 @@ public class Schedule {
     @Column(name = "password", nullable = false)
     private String password;
 
-    @Column(name = "date", nullable = false)
-    private Date date;
+    @Column(name = "createdAt", nullable = false)
+    private LocalDateTime createdAt; // 변경된 필드명
 
     public Schedule(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
         this.admin = requestDto.getAdmin();
         this.password = requestDto.getPassword();
-        this.date = requestDto.getDate();
+        this.createdAt = requestDto.getCreatedAt(); // 변경된 필드명
     }
 
     public void update(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
         this.admin = requestDto.getAdmin();
+        this.createdAt = LocalDateTime.now(); // 변경된 필드명
     }
 }
-

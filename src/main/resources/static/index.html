@@ -253,10 +253,12 @@
             let contents = $(`#${id}-contents`).text().trim();
             let title = $(`#${id}-title`).text().trim();
             let admin = $(`#${id}-admin`).text().trim();
+            let date = $(`#${id}-date`).text().trim();
 
             $(`#${id}-contents-textarea`).val(contents);
             $(`#${id}-title-textarea`).val(title);
             $(`#${id}-admin-textarea`).val(admin);
+            $(`#${id}-date-textarea`).val(date);
         }
 
         function showEdits(id) {
@@ -267,6 +269,7 @@
             $(`#${id}-contents`).hide();
             $(`#${id}-title`).hide();
             $(`#${id}-admin`).hide();
+            $(`#${id}-date`).hide();
             $(`#${id}-edit`).hide();
         }
 
@@ -363,7 +366,7 @@
                         관리자 : ${admin}
                     </div>
                     <div class="date">
-                        작성 날짜 : ${date}
+                        수정 날짜 : ${date}
                     </div>
                 </div>
                 <div class="contents">
@@ -388,7 +391,7 @@
                         let title = message['title'];
                         let contents = message['contents'];
                         let admin = message['admin'];
-                        let date = message['date'];
+                        let date = message['modifiedAt'];
                         addHTML(id, title, contents, admin, date);
                     }
                 }
@@ -403,16 +406,18 @@
             let title = $('#title').val();
             let contents = $('#contents').val();
             let admin = $('#admin').val();
-            let date = $('#date').val();
             let password = $('#password').val();
 
-            if (isValidContents(title, "title") === false) {return;}
-            if (isValidContents(contents, "contents") === false) {return;}
+            if (isValidContents(title, "title") === false) { return; }
+            if (isValidContents(contents, "contents") === false) { return; }
 
-            if (!title || !contents || !admin || !date || !password) {
+            if (!title || !contents || !admin || !password) {
                 alert('모든 필드를 입력해주세요.');
                 return;
             }
+
+            let date = new Date().toISOString(); // 현재 날짜를 ISO 형식으로 가져옴
+
             let data = {'title': title, 'contents': contents, 'admin': admin, 'date': date, 'password': password};
             $.ajax({
                 type: "POST",
@@ -429,6 +434,7 @@
                 }
             });
         }
+
 
 
     </script>
@@ -455,7 +461,6 @@
         <textarea class="field" placeholder="담당자를 입력해주세요" name="admin" id="admin" cols="30" rows="1"></textarea>
     </div>
     <div class="horizontal-input">
-        <input type="date" class="field" name="date" id="date">
         <input type="password" class="field" placeholder="비밀번호를 입력해주세요" name="password" id="password">
         <img src="images/send.png" alt="" onclick="writeSchedule()">
     </div>
