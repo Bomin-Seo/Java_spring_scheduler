@@ -6,19 +6,19 @@ import com.sparta.scheduler.entity.Schedule;
 import com.sparta.scheduler.repository.SchedulerRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Date;
 import java.util.List;
 
-
+@Component
 public class SchedulerService {
 
-    private final JdbcTemplate jdbcTemplate;
     private final SchedulerRepository schedulerRepository;
 
-    public SchedulerService(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
-        this.schedulerRepository = new SchedulerRepository(jdbcTemplate);
+    public SchedulerService(SchedulerRepository schedulerRepository) {
+        this.schedulerRepository = schedulerRepository;
     }
 
     public SchedulerResponseDto createSchedule(SchedulerRequestDto requestDto) {
@@ -28,24 +28,32 @@ public class SchedulerService {
     }
 
     public List<SchedulerResponseDto> getAllSchedules() {
-        return schedulerRepository.getAllSchedules();
+        return schedulerRepository.findAll().stream().map(SchedulerResponseDto::new).toList();
     }
 
+    @Transactional
     public ResponseEntity<?> updateSchedule(Long id, String password, SchedulerRequestDto requestDto) {
-        Schedule schedule = schedulerRepository.findById(id);
-        Date currentDate = schedule.getDate();
-        if (schedule != null && schedule.getPassword().equals(password)) {
-            schedulerRepository.update(id, requestDto, currentDate, password);
+        Schedule schedule = findScheduleById(id);
+        if (schedule.getPassword().equals(password)) {
+            schedule.update(requestDto);
             return ResponseEntity.ok(true);
         } else {return ResponseEntity.ok(false);}
     }
 
+    @Transactional
     public ResponseEntity<?> deleteSchedule(Long id, String password) {
-        Schedule schedule = schedulerRepository.findById(id);
-        if (schedule != null && schedule.getPassword().equals(password)) {
-            schedulerRepository.delete(id);
+        Schedule schedule = findScheduleById(id);
+
+        if (schedule.getPassword().equals(password)) {
+            schedulerRepository.delete(schedule);
             return ResponseEntity.ok(true);
         }
         else {return ResponseEntity.ok(false);}
+    }
+
+    private Schedule findScheduleById(Long id) {
+        return schedulerRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("Schedule not found")
+        );
     }
 }
