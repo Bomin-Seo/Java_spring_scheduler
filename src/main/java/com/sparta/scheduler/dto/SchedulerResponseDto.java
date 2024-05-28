@@ -12,7 +12,7 @@ public class SchedulerResponseDto {
     private final String contents;
     private final String admin;
     private final String password;
-    private final LocalDateTime createdAt; // 변경된 필드명
+    private final LocalDateTime createdAt;
     private final LocalDateTime modifiedAt;
 
     public SchedulerResponseDto(Schedule schedule) {

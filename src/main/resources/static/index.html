@@ -244,7 +244,6 @@
             return true;
         }
 
-
         function editSchedule(id) {
             $(`#${id}-title-textarea`).attr("placeholder", "제목을 입력해주세요");
             $(`#${id}-admin-textarea`).attr("placeholder", "관리자를 입력해주세요");
@@ -326,56 +325,83 @@
             });
         }
 
-        function toggleDetails(id) {
-            if (!event.target.matches('.icon-start-edit, .icon-delete, .icon-end-edit')) {
-                $(`#${id}-details`).toggle();
-            }
+        function showDetails(id, title, contents, admin, date) {
+            const detailWindow = window.open('', '_blank', 'width=600,height=400');
+            const detailHtml = `
+        <html>
+        <head>
+            <title>세부 일정</title>
+            <style>
+                body {
+                    font-family: Arial, sans-serif;
+                    margin: 20px;
+                }
+                .metadata {
+                    margin-bottom: 10px;
+                }
+                .metadata div {
+                    margin-bottom: 5px;
+                }
+                .contents {
+                    margin-top: 20px;
+                }
+            </style>
+        </head>
+        <body>
+            <h2>세부 일정</h2>
+            <div class="metadata">
+                <div><strong>제목:</strong> ${title}</div>
+                <div><strong>작성 날짜:</strong> ${date}</div>
+                <div><strong>관리자:</strong> ${admin}</div>
+            </div>
+            <div class="contents">
+                <strong>내용:</strong>
+                <div>${contents}</div>
+            </div>
+
+            <div class="contents">
+                <strong>내용:</strong>
+                <div>${contents}</div>
+            </div>
+            <div class="comments">
+                <textarea id="comment-content" placeholder="댓글을 작성해주세요"></textarea>
+                <button onclick="submitComment('${id}')">댓글 작성</button>
+            </div>
+        </body>
+        </html>
+    `;
+            detailWindow.document.write(detailHtml);
+            detailWindow.document.close();
         }
 
+
         function addHTML(id, title, contents, admin, date) {
-            let tempHtml = `<div id="${id}" class="card" onclick="toggleDetails('${id}')">
-            <!-- title/admin 영역 -->
-            <div class="metadata">
-                <div id="${id}-title" class="title" style="font-size: 20px;">
-                    ${title}
-                </div>
-                <div id="${id}-date" class="date">
-                    작성 날짜 : ${date}
-                </div>
-            </div>
-            <!-- contents 조회/수정 영역 -->
-            <div class="contents">
-                <div id="${id}-editarea" class="edit">
-                    <textarea id="${id}-title-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
-                    <textarea id="${id}-admin-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
-                    <textarea id="${id}-contents-textarea" class="te-edit" name="" cols="30" rows="5"></textarea>
-                </div>
-            </div>
-            <!-- 버튼 영역 -->
-            <div class="footer">
-                <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
-                <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
-                <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
-            </div>
-            <div id="${id}-details" class="details" style="display: none;">
+            let tempHtml = `<div id="${id}" class="card">
+                <!-- title/admin 영역 -->
                 <div class="metadata">
-                    <div class="title" style="font-size: 20px;">
+                    <div id="${id}-title" class="title" style="font-size: 20px;">
                         ${title}
                     </div>
-                    <div class="admin">
-                        관리자 : ${admin}
-                    </div>
-                    <div class="date">
-                        수정 날짜 : ${date}
+                    <div id="${id}-date" class="date">
+                        작성 날짜 : ${date}
                     </div>
                 </div>
+                <!-- contents 조회/수정 영역 -->
                 <div class="contents">
-                    <div class="text">
-                        ${contents}
+                    <div id="${id}-editarea" class="edit">
+                        <textarea id="${id}-title-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
+                        <textarea id="${id}-admin-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
+                        <textarea id="${id}-contents-textarea" class="te-edit" name="" cols="30" rows="5"></textarea>
                     </div>
                 </div>
-            </div>
-        </div>`;
+                <!-- 버튼 영역 -->
+                <div class="footer">
+                    <button onclick="showDetails('${id}', '${title}', '${contents}', '${admin}', '${date}')">세부일정 조회</button>
+                    <img id="${id}-edit" class="icon-start-edit" src="images/edit.png" alt="" onclick="editSchedule('${id}')">
+                    <img id="${id}-delete" class="icon-delete" src="images/delete.png" alt="" onclick="deleteSchedule('${id}')">
+                    <img id="${id}-submit" class="icon-end-edit" src="images/done.png" alt="" onclick="submitEdit('${id}')">
+                </div>
+            </div>`;
             $('#cards-box').append(tempHtml);
         }
 
@@ -401,6 +427,36 @@
         $(document).ready(function () {
             getMessages();
         })
+
+        function submitComment(scheduleId) {
+            let content = document.getElementById('comment-content').value.trim();
+            let userId = '사용자 아이디';
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+
+            let data = {
+                content: content,
+                userId: userId,
+                scheduleId: scheduleId
+            };
+
+            $.ajax({
+                type: 'POST',
+                url: '/api/comments',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('댓글이 성공적으로 등록되었습니다.');
+                    window.location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('댓글을 등록하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
 
         function writeSchedule() {
             let title = $('#title').val();
@@ -434,8 +490,6 @@
                 }
             });
         }
-
-
 
     </script>
 </head>
