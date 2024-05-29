@@ -7,6 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Setter
 @Getter
@@ -31,20 +33,24 @@ public class Schedule extends Timestamped{
     private String password;
 
     @Column(name = "createdAt", nullable = false)
-    private LocalDateTime createdAt; // 변경된 필드명
+    private LocalDateTime createdAt;
+
+    @OneToMany
+    @JoinColumn(name = "scheduleId")
+    private List<Comment> userList = new ArrayList<>();
 
     public Schedule(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
         this.admin = requestDto.getAdmin();
         this.password = requestDto.getPassword();
-        this.createdAt = requestDto.getCreatedAt(); // 변경된 필드명
+        this.createdAt = requestDto.getCreatedAt();
     }
 
     public void update(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
         this.admin = requestDto.getAdmin();
-        this.createdAt = LocalDateTime.now(); // 변경된 필드명
+        this.createdAt = LocalDateTime.now();
     }
 }
