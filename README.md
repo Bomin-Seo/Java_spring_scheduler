@@ -1,15 +1,28 @@
 ```mermaid
 erDiagram
-    CAR ||--o{ NAMED-DRIVER : allows
-    CAR {
-        string registrationNumber
-        string make
-        string model
+    User --{ Schedule
+    User {
+        Long id
+        String username
+        String nickname
+        String password
+        UserRoleEnum role
+        LocalDateTime createdAt
     }
-    PERSON ||--o{ NAMED-DRIVER : is
-    PERSON {
-        string firstName
-        string lastName
-        int age
+    Schedule --{ Comment
+    Schedule {
+        Long id
+        String title
+        String contents
+        String admin
+        String password
+        LocalDateTime createdAt
+    }
+    Comment {
+        Long id
+        String content
+        String username
+        Long scheduleId
+        LocalDateTime createdAt
     }
 ```
