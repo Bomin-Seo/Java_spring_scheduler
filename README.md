@@ -1,3 +1,4 @@
+```
 erDiagram
     CAR ||--o{ NAMED-DRIVER : allows
     CAR {
@@ -11,3 +12,4 @@ erDiagram
         string lastName
         int age
     }
+```
