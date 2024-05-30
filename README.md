@@ -1,7 +1,7 @@
 ```mermaid
 erDiagram
-    User ||--o{ Schedule
-    Schedule ||--o{ Comment
+    User ||--o{ Schedule : 
+    Schedule ||--o{ Comment : 
 
     User {
         Long id
