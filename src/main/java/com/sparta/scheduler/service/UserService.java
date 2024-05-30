@@ -6,9 +6,11 @@ import com.sparta.scheduler.entity.User;
 import com.sparta.scheduler.entity.UserRoleEnum;
 import com.sparta.scheduler.jwt.JwtUtil;
 import com.sparta.scheduler.repository.UserRepository;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.events.Event;
 
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -47,7 +49,6 @@ public class UserService {
             throw new IllegalArgumentException("중복된 사용자가 존재합니다.");
         }
 
-
         UserRoleEnum role = UserRoleEnum.USER;
         if (requestDto.isAdmin()) {
             if (!ADMIN_TOKEN.equals(requestDto.getAdminToken())) {
@@ -77,5 +78,10 @@ public class UserService {
         String token = jwtUtil.createToken(username, user.getRole());
         jwtUtil.addJwtToCookie(token, response);
 
+        Cookie usernameCookie = new Cookie("username", username);
+        response.addCookie(usernameCookie);
+
+        Cookie userIdCookie = new Cookie("user_id", user.getId().toString());
+        response.addCookie(userIdCookie);
     }
 }

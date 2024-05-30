@@ -1,19 +1,24 @@
 package com.sparta.scheduler.dto;
 
 import com.sparta.scheduler.entity.Schedule;
+import com.sparta.scheduler.entity.User;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
+@NoArgsConstructor
 public class SchedulerResponseDto {
-    private final Long id;
-    private final String title;
-    private final String contents;
-    private final String admin;
-    private final String password;
-    private final LocalDateTime createdAt;
-    private final LocalDateTime modifiedAt;
+    private Long id;
+    private String title;
+    private String contents;
+    private String admin;
+    private String password;
+    private LocalDateTime createdAt;
+    private LocalDateTime modifiedAt;
 
     public SchedulerResponseDto(Schedule schedule) {
         this.id = schedule.getId();

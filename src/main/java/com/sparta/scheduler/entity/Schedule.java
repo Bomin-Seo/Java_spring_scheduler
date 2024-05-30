@@ -15,7 +15,7 @@ import java.util.List;
 @Entity
 @Table(name = "schedule")
 @NoArgsConstructor
-public class Schedule extends Timestamped{
+public class Schedule extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -26,7 +26,7 @@ public class Schedule extends Timestamped{
     @Column(name = "contents", nullable = false, length = 500)
     private String contents;
 
-    @Column(name = "admin", nullable = false)
+    @Column(name = "admin", nullable = false) // 변경된 부분
     private String admin;
 
     @Column(name = "password", nullable = false)
@@ -35,9 +35,8 @@ public class Schedule extends Timestamped{
     @Column(name = "createdAt", nullable = false)
     private LocalDateTime createdAt;
 
-    @OneToMany
-    @JoinColumn(name = "scheduleId")
-    private List<Comment> userList = new ArrayList<>();
+    @OneToMany(mappedBy = "schedule", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
 
     public Schedule(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
@@ -50,7 +49,6 @@ public class Schedule extends Timestamped{
     public void update(SchedulerRequestDto requestDto) {
         this.title = requestDto.getTitle();
         this.contents = requestDto.getContents();
-        this.admin = requestDto.getAdmin();
         this.createdAt = LocalDateTime.now();
     }
 }

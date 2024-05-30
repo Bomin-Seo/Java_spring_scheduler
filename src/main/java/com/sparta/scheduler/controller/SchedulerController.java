@@ -2,6 +2,7 @@ package com.sparta.scheduler.controller;
 
 import com.sparta.scheduler.dto.SchedulerRequestDto;
 import com.sparta.scheduler.dto.SchedulerResponseDto;
+import com.sparta.scheduler.entity.Schedule;
 import com.sparta.scheduler.service.SchedulerService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +20,12 @@ public class SchedulerController {
     }
 
     @PostMapping("/schedules")
-    public SchedulerResponseDto createSchedule(@RequestBody SchedulerRequestDto requestDto){
+    public SchedulerResponseDto createSchedule(@RequestBody SchedulerRequestDto requestDto) {
         return schedulerService.createSchedule(requestDto);
     }
 
     @GetMapping("/schedules")
-    public List<SchedulerResponseDto> getSchedules(){
+    public List<SchedulerResponseDto> getSchedules() {
         return schedulerService.getAllSchedules();
     }
 
@@ -33,8 +34,13 @@ public class SchedulerController {
         return schedulerService.updateSchedule(id, password, requestDto);
     }
 
-    @RequestMapping(value = "/schedules/{id}", method = RequestMethod.DELETE)
+    @DeleteMapping("/schedules/{id}")
     public ResponseEntity<?> deleteSchedule(@PathVariable Long id, @RequestParam String password) {
         return schedulerService.deleteSchedule(id, password);
+    }
+
+    @GetMapping("/user/schedules")
+    public List<Schedule> getSchedulesByUserId(@RequestParam(required = false) Long userId) {
+        return schedulerService.getSchedulesByUserId(userId);
     }
 }

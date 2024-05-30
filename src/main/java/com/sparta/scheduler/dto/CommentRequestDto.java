@@ -1,19 +1,18 @@
 package com.sparta.scheduler.dto;
 
-import com.sparta.scheduler.entity.User;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @NoArgsConstructor
-public class SchedulerRequestDto {
-    private String title;
-    private String contents;
-    private String admin;
-    private String password;
+public class CommentRequestDto {
+    private String content;
+    private String userId;
+    private Long scheduleId;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;
 }

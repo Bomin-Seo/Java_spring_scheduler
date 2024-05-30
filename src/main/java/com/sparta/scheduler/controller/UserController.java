@@ -4,6 +4,7 @@ import com.sparta.scheduler.dto.LoginRequestDto;
 import com.sparta.scheduler.dto.SignupRequestDto;
 import com.sparta.scheduler.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -24,6 +25,11 @@ public class UserController {
         return "login";
     }
 
+    @GetMapping("/user/mainpage")
+    public String mainPage() {
+        return "mainpage";
+    }
+
     @GetMapping("/user/signup")
     public String signupPage() {
         return "signup";
@@ -32,7 +38,7 @@ public class UserController {
     @PostMapping("/user/signup")
     public String signup(SignupRequestDto requestDto){
         userService.signup(requestDto);
-        return "redirect:api/user/login-page";
+        return "redirect:/api/user/login-page";
     }
 
     @PostMapping("/user/login")
