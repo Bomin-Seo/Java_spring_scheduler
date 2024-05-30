@@ -243,133 +243,12 @@
             return true;
         }
 
-        function showDetails(id, title, contents, admin, date) {
-            const detailWindow = window.open('', '_blank', 'width=600,height=400');
-            const detailHtml = `
-            <html>
-            <head>
-                <title>세부 일정</title>
-                <style>
-                    body {
-                        font-family: Arial, sans-serif;
-                        margin: 20px;
-                    }
-                    .metadata {
-                        margin-bottom: 10px;
-                    }
-                    .metadata div {
-                        margin-bottom: 5px;
-                    }
-                    .contents {
-                        margin-top: 20px;
-                    }
-                </style>
-            </head>
-            <body>
-                <h2>세부 일정</h2>
-                <div class="metadata">
-                    <div><strong>제목:</strong> ${title}</div>
-                    <div><strong>작성 날짜:</strong> ${date}</div>
-                    <div><strong>관리자:</strong> ${admin}</div>
-                </div>
-                <div class="contents">
-                    <strong>내용:</strong>
-                    <div>${contents}</div>
-                </div>
-                <div class="comments">
-                    <textarea id="comment-content" placeholder="댓글을 작성해주세요"></textarea>
-                    <button onclick="writeComment('${id}')">댓글 작성</button>
-                </div>
-                <div id="comments-box" class="area-read">
-                    <div class="card">
-                        <div class="contents">
-
-                        </div>
-                        <div id="id" class="footer">
-                            <img class="icon-start-edit" src="/images/edit.png" alt="" onclick="editComment('${id}')">
-                            <img class="icon-delete" src="/images/delete.png" alt="" onclick="deleteComment('${id}')">
-                            <img class="icon-end-edit" src="/images/done.png" alt="" onclick="submitComment('${id}')">
-                        </div>
-                    </div>
-                </div>
-
-
-            </body>
-            </html>
-            `;
-            detailWindow.document.write(detailHtml);
-            detailWindow.document.close();
-        }
-
-        function writeComment(scheduleId) {
-            let content = $('#comment-content').val();
-            let userId = getUserIdFromCookie();
-            if (!content) {
-                alert('댓글 내용을 입력해주세요.');
-                return;
-            }
-            let data = {content: content, userId: userId, scheduleId: scheduleId};
-            $.ajax({
-                type: 'POST',
-                url: '/api/comments',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (response) {
-                    alert('댓글이 성공적으로 등록되었습니다.');
-                    window.location.reload();
-                },
-                error: function (xhr, status, error) {
-                    alert('댓글을 등록하는 중 오류가 발생했습니다.');
-                    console.error(xhr.responseText);
-                }
-            });
-        }
-
-        function submitComment(scheduleId) {
-            let content = $('#comment-content').val();
-            let userId = getUserIdFromCookie();
-            if (!content) {
-                alert('댓글 내용을 입력해주세요.');
-                return;
-            }
-            let data = {
-                content: content,
-                userId: userId,
-                scheduleId: scheduleId
-            };
-            $.ajax({
-                type: 'POST',
-                url: '/api/comments',
-                contentType: 'application/json',
-                data: JSON.stringify(data),
-                success: function (response) {
-                    alert('댓글이 성공적으로 등록되었습니다.');
-                    window.location.reload();
-                },
-                error: function (xhr, status, error) {
-                    alert('댓글을 등록하는 중 오류가 발생했습니다.');
-                    console.error(xhr.responseText);
-                }
-            });
-        }
-
         function getUsernameFromCookie() {
             const cookies = document.cookie.split(';');
             for (let i = 0; i < cookies.length; i++) {
                 let cookie = cookies[i].trim();
                 if (cookie.startsWith('username=')) {
                     return cookie.substring('username='.length, cookie.length);
-                }
-            }
-            return null;
-        }
-
-        function getUserIdFromCookie() {
-            const cookies = document.cookie.split(';').map(cookie => cookie.trim());
-            for (let i = 0; i < cookies.length; i++) {
-                let cookie = cookies[i];
-                if (cookie.startsWith('user_id=')) {
-                    return cookie.substring('user_id='.length);
                 }
             }
             return null;
@@ -434,7 +313,6 @@
                 }
             });
         }
-
 
     </script>
 </head>

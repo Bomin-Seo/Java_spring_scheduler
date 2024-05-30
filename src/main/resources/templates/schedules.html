@@ -109,7 +109,7 @@
             <div class="footer">
                 <img id="${id}-edit" class="icon-start-edit" src="/images/edit.png" alt="" onclick="editSchedule('${id}')">
                 <img id="${id}-delete" class="icon-delete" src="/images/delete.png" alt="" onclick="deleteSchedule('${id}')">
-                <img id="${id}-submit" class="icon-end-edit" src="/images/done.png" alt="" onclick="submitEdit('${id}')">
+                <img id="${id}-submit" class="icon-end-edit" src="/images/done.png" alt="" style="display: none;" onclick="submitEdit('${id}')">
                 <button onclick="toggleComments('${id}')">댓글</button>
             </div>
             <div id="${id}-comments" class="comments" style="display: none;">
@@ -148,8 +148,10 @@
         }
 
         function toggleComments(scheduleId) {
-            $(`#${scheduleId}-comments`).toggle();
             if ($(`#${scheduleId}-comments`).is(":visible")) {
+                $(`#${scheduleId}-comments`).hide();
+            } else {
+                $(`#${scheduleId}-comments`).show();
                 getCommentsForSchedule(scheduleId);
             }
         }
@@ -157,11 +159,58 @@
         function addComments(scheduleId, comments) {
             let commentsHtml = "";
             comments.forEach(comment => {
-                if (comment.scheduleId === scheduleId) {
-                    commentsHtml += `<div class="comment">${comment.content} - ${comment.username}</div>`;
+                if (comment.scheduleId == scheduleId) {
+                    commentsHtml += `
+                <div class="comment" id="comment-${comment.id}">
+                    ${comment.content} - ${comment.username}
+                    <div id="${comment.id}-commentedit" class="edit" style="display: none;">
+                        <textarea id="${comment.id}-cc-textarea" class="te-edit" name="" cols="30" rows="2"></textarea>
+                    </div>
+                    <div class="footer">
+                        <img id="${comment.id}-cedit" class="icon-start-edit" src="/images/edit.png" alt="" onclick="editComment('${comment.username}', '${comment.id}')">
+                        <img id="${comment.id}-cdelete" class="icon-delete" src="/images/delete.png" alt="" onclick="deleteComment('${comment.username}', '${comment.id}')">
+                        <img id="${comment.id}-csubmit" class="icon-end-edit" src="/images/done.png" style="display: none;" alt="" onclick="submitCommentEdit('${comment.username}', '${comment.id}')">
+                    </div>
+                </div>
+            `;
                 }
             });
             $(`#${scheduleId}-comments-area`).html(commentsHtml);
+        }
+
+        function editComment(username, id) {
+            $(`#${id}-commentedit .te-edit`).show();
+            $(`#${id}-cedit`).hide();
+            $(`#${id}-csubmit`).show();
+            $(`#${id}-cc-textarea`).attr("placeholder", "내용을 입력해주세요");
+            showCommentEdits(id);
+        }
+
+        function deleteComment(username, id) {
+            let currentUser = getUsernameFromCookie();
+            if (currentUser !== username) {
+                alert("댓글을 작성한 사용자만 삭제할 수 있습니다.");
+                return;
+            }
+            if (!confirm("댓글을 삭제하시겠습니까?")) {
+                return;
+            }
+            $.ajax({
+                type: "DELETE",
+                url: `/api/comments/${id}`,
+                success: function (response) {
+                    if (response === true) {
+                        alert('댓글 삭제에 성공하였습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('댓글 삭제에 실패하였습니다.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('댓글을 삭제하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
         }
 
         function getCommentsForSchedule(scheduleId) {
@@ -203,27 +252,56 @@
 
         function editSchedule(id) {
             $(`#${id}-editarea .te-edit`).show();
+            $(`#${id}-edit`).hide();
+            $(`#${id}-submit`).show();
             $(`#${id}-title-textarea`).attr("placeholder", "제목을 입력해주세요");
             $(`#${id}-contents-textarea`).attr("placeholder", "내용을 입력해주세요");
-            showEdits(id);
-            let contents = $(`#${id}-contents`).text().trim();
-            let title = $(`#${id}-title`).text().trim();
-            let date = $(`#${id}-date`).text().trim();
 
-            $(`#${id}-contents-textarea`).val(contents);
-            $(`#${id}-title-textarea`).val(title);
-            $(`#${id}-date-textarea`).val(date);
+            showEdits(id);
+        }
+
+        function submitCommentEdit(username, id) {
+            let currentUser = getUsernameFromCookie();
+            if (currentUser !== username) {
+                alert("댓글을 작성한 사용자만 수정할 수 있습니다.");
+                return;
+            }
+            let content = $(`#${id}-cc-textarea`).val().trim();
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+            let data = { content: content, username: username };
+            $.ajax({
+                type: "PUT",
+                url: `/api/comments/${id}`,
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('댓글 수정에 성공하였습니다.');
+                    window.location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('댓글을 수정하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
         }
 
         function showEdits(id) {
-            $(`#${id}-editarea`).show();
+            $(`#${id}--editarea`).show();
             $(`#${id}-submit`).show();
             $(`#${id}-delete`).show();
 
-            $(`#${id}-contents`).hide();
             $(`#${id}-title`).hide();
             $(`#${id}-date`).hide();
             $(`#${id}-edit`).hide();
+        }
+
+        function showCommentEdits(id) {
+            $(`#${id}-commentedit`).show();
+            $(`#${id}-csubmit`).show();
+            $(`#${id}-cdelete`).show();
         }
 
         function submitEdit(id) {

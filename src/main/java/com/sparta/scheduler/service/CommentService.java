@@ -45,16 +45,21 @@ public class CommentService {
     }
 
     @Transactional
-    public boolean deleteComment(Long id) {
-        Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
+    public ResponseEntity<?> deleteComment(Long id) {
+        Comment comment = findScheduleById(id);
         commentRepository.delete(comment);
-        return true;
+        return ResponseEntity.ok(true);
     }
 
     public List<CommentResponseDto> getCommentsForSchedule(Long scheduleId) {
         return commentRepository.findByScheduleIdOrderByCreatedAt(scheduleId).stream()
                 .map(CommentResponseDto::new)
                 .collect(Collectors.toList());
+    }
+
+    private Comment findScheduleById(Long id) {
+        return commentRepository.findById(id).orElseThrow(() ->
+                new IllegalArgumentException("일정을 찾을 수 없습니다.")
+        );
     }
 }

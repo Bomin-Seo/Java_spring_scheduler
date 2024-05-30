@@ -4,7 +4,6 @@ import com.sparta.scheduler.dto.LoginRequestDto;
 import com.sparta.scheduler.dto.SignupRequestDto;
 import com.sparta.scheduler.service.UserService;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
