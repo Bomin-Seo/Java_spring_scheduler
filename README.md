@@ -1,7 +1,7 @@
 ```mermaid
 erDiagram
-    User ||--o{ Schedule 
-    Schedule ||--o{ Comment 
+    User ||--o{ Schedule : "has"
+    Schedule ||--o{ Comment : "has"
 
     User {
         Long id
@@ -28,5 +28,4 @@ erDiagram
         Long scheduleId
         LocalDateTime createdAt
     }
-
 ```
