@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ public class CommentService {
 
     public CommentResponseDto createcomment(CommentRequestDto requestDto) {
         Comment comment = new Comment(requestDto);
+        comment.setUsername(requestDto.getUsername());
         Comment savedcomment = commentRepository.save(comment);
         return new CommentResponseDto(savedcomment);
     }
@@ -48,5 +50,11 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("Comment not found"));
         commentRepository.delete(comment);
         return true;
+    }
+
+    public List<CommentResponseDto> getCommentsForSchedule(Long scheduleId) {
+        return commentRepository.findByScheduleIdOrderByCreatedAt(scheduleId).stream()
+                .map(CommentResponseDto::new)
+                .collect(Collectors.toList());
     }
 }

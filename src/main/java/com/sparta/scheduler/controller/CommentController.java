@@ -30,6 +30,11 @@ public class CommentController {
         return commentService.getAllComments();
     }
 
+    @GetMapping("/{scheduleId}")
+    public List<CommentResponseDto> getCommentsForSchedule(@PathVariable Long scheduleId) {
+        return commentService.getCommentsForSchedule(scheduleId);
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<CommentResponseDto> updateComment(@PathVariable Long id, @RequestBody CommentRequestDto requestDto) {
         CommentResponseDto updatedComment = commentService.updateComment(id, requestDto);

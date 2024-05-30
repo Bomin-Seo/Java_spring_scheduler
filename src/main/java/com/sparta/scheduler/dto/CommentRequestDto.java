@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class CommentRequestDto {
     private String content;
-    private String userId;
+    private String username;
     private Long scheduleId;
     private LocalDateTime createdAt;
     private LocalDateTime modifiedAt;

@@ -30,6 +30,11 @@ public class UserController {
         return "mainpage";
     }
 
+    @GetMapping("/user/schedulepage")
+    public String schedulePage() {
+        return "schedules";
+    }
+
     @GetMapping("/user/signup")
     public String signupPage() {
         return "signup";

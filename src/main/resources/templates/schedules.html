@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전체 일정 조회</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        .background {
+            position: fixed;
+            z-index: -1;
+            width: 100%;
+            height: 100%;
+        }
+
+        .background-header {
+            top: 0px;
+            background-color: #339af0;
+        }
+
+        /* White background */
+        .background-body {
+            top: 520px;
+            background-color: #dee2e6;
+        }
+
+        /* Header styles */
+        .header {
+            background-color: #339af0;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Button styles */
+        .header button {
+            background-color: #ffffff;
+            color: #339af0;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Card styles */
+        .card {
+            background-color: white;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #dee2e6;
+        }
+
+        /* Metadata styles */
+        .metadata {
+            margin-bottom: 10px;
+        }
+
+        .metadata .title {
+            font-size: 20px;
+        }
+
+        .metadata .admin {
+            color: #868e96;
+        }
+
+        /* Contents styles */
+        .contents {
+            color: #495057;
+        }
+
+        .contents textarea.te-edit {
+            border-right: none;
+            border-top: none;
+            border-left: none;
+            resize: none;
+            border-bottom: 1px solid #212529;
+            width: 100%;
+            font-family: 'Spoqa Han Sans';
+        }
+
+        .te-edit {
+            display: none;
+        }
+    </style>
+    <script>
+        function addHTML(id, title, contents, admin, date) {
+            let tempHtml = `<div id="${id}" class="card">
+            <!-- title/admin 영역 -->
+            <div class="metadata">
+                <div id="${id}-title" class="title" style="font-size: 20px;">
+                    ${title}
+                </div>
+                <div id="${id}-date" class="date">
+                    작성 날짜 : ${date}  관리자 : ${admin}
+                </div>
+                ${contents}
+            </div>
+            <!-- contents 조회/수정 영역 -->
+            <div class="contents">
+                <div id="${id}-editarea" class="edit">
+                    <textarea id="${id}-title-textarea" class="te-edit" name="" cols="30" rows="1"></textarea>
+                    <textarea id="${id}-contents-textarea" class="te-edit" name="" cols="30" rows="5"></textarea>
+                </div>
+            </div>
+            <!-- 버튼 영역 -->
+            <div class="footer">
+                <img id="${id}-edit" class="icon-start-edit" src="/images/edit.png" alt="" onclick="editSchedule('${id}')">
+                <img id="${id}-delete" class="icon-delete" src="/images/delete.png" alt="" onclick="deleteSchedule('${id}')">
+                <img id="${id}-submit" class="icon-end-edit" src="/images/done.png" alt="" onclick="submitEdit('${id}')">
+                <button onclick="toggleComments('${id}')">댓글</button>
+            </div>
+            <div id="${id}-comments" class="comments" style="display: none;">
+                <textarea id="${id}-comment-textarea" class="comment-textarea" name="" cols="30" rows="3" placeholder="댓글을 작성하세요."></textarea>
+                <button onclick="writeComment('${id}')">댓글 작성</button>
+            </div>
+            <div id="${id}-comments-area" class="comments-area">
+
+            </div>
+        </div>`;
+            $('#cards-box').append(tempHtml);
+        }
+
+        function writeComment(scheduleId) {
+            let content = $(`#${scheduleId}-comment-textarea`).val();
+            let username = getUsernameFromCookie();
+            if (!content) {
+                alert('댓글 내용을 입력해주세요.');
+                return;
+            }
+            let data = {content: content, username: username, scheduleId: scheduleId};
+            $.ajax({
+                type: 'POST',
+                url: '/api/comments',
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function (response) {
+                    alert('댓글이 성공적으로 등록되었습니다.');
+                    window.location.reload();
+                },
+                error: function (xhr, status, error) {
+                    alert('댓글을 등록하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function toggleComments(scheduleId) {
+            $(`#${scheduleId}-comments`).toggle();
+            if ($(`#${scheduleId}-comments`).is(":visible")) {
+                getCommentsForSchedule(scheduleId);
+            }
+        }
+
+        function addComments(scheduleId, comments) {
+            let commentsHtml = "";
+            comments.forEach(comment => {
+                if (comment.scheduleId === scheduleId) {
+                    commentsHtml += `<div class="comment">${comment.content} - ${comment.username}</div>`;
+                }
+            });
+            $(`#${scheduleId}-comments-area`).html(commentsHtml);
+        }
+
+        function getCommentsForSchedule(scheduleId) {
+            $.ajax({
+                type: 'GET',
+                url: `/api/comments?scheduleId=${scheduleId}`, // 수정된 부분
+                success: function (response) {
+                    addComments(scheduleId, response);
+                    $(`#${scheduleId}-comments`).show();
+                },
+                error: function (xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function deleteSchedule(id) {
+            let inputPassword = prompt("비밀번호를 입력하세요 : ");
+            if (inputPassword === null) {
+                return null;
+            }
+            $.ajax({
+                type: "DELETE",
+                url: `/api/schedules/${id}?password=${inputPassword}`,
+                success: function (response) {
+                    if (response === true) {
+                        alert('일정 삭제에 성공하였습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('일정을 삭제하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function editSchedule(id) {
+            $(`#${id}-editarea .te-edit`).show();
+            $(`#${id}-title-textarea`).attr("placeholder", "제목을 입력해주세요");
+            $(`#${id}-contents-textarea`).attr("placeholder", "내용을 입력해주세요");
+            showEdits(id);
+            let contents = $(`#${id}-contents`).text().trim();
+            let title = $(`#${id}-title`).text().trim();
+            let date = $(`#${id}-date`).text().trim();
+
+            $(`#${id}-contents-textarea`).val(contents);
+            $(`#${id}-title-textarea`).val(title);
+            $(`#${id}-date-textarea`).val(date);
+        }
+
+        function showEdits(id) {
+            $(`#${id}-editarea`).show();
+            $(`#${id}-submit`).show();
+            $(`#${id}-delete`).show();
+
+            $(`#${id}-contents`).hide();
+            $(`#${id}-title`).hide();
+            $(`#${id}-date`).hide();
+            $(`#${id}-edit`).hide();
+        }
+
+        function submitEdit(id) {
+            let title = $(`#${id}-title-textarea`).val().trim();
+            let contents = $(`#${id}-contents-textarea`).val().trim();
+
+            let inputPassword = prompt("비밀번호를 입력하세요 : ");
+            if (inputPassword === null) {
+                return null;
+            }
+            let data = {'title': title, 'contents': contents, 'inputPassword': inputPassword};
+            $.ajax({
+                type: "PUT",
+                url: `/api/schedules/${id}?password=${inputPassword}`,
+                contentType: "application/json",
+                data: JSON.stringify(data),
+                success: function (response) {
+                    if (response === true) {
+                        alert('일정 변경에 성공하였습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('비밀번호가 일치하지 않습니다.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    alert('일정을 변경하는 중 오류가 발생했습니다.');
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function getSchedules() {
+            $('#cards-box').empty();
+            $.ajax({
+                type: 'GET',
+                url: '/api/schedules',
+                success: function (response) {
+                    response.sort((a, b) => new Date(b.date) - new Date(a.date));
+                    for (let i = 0; i < response.length; i++) {
+                        let message = response[i];
+                        let id = message['id'];
+                        let title = message['title'];
+                        let contents = message['contents'];
+                        let admin = message['admin'];
+                        let date = message['modifiedAt'];
+                        addHTML(id, title, contents, admin, date);
+                    }
+                }
+            });
+        }
+
+        function getUsernameFromCookie() {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                let cookie = cookies[i].trim();
+                if (cookie.startsWith('username=')) {
+                    return cookie.substring('username='.length, cookie.length);
+                }
+            }
+            return null;
+        }
+
+        $(document).ready(function () {
+            getSchedules();
+        });
+
+    </script>
+</head>
+
+<body>
+<div class="wrap">
+    <div class="header">
+        <h2>전체 일정 조회</h2>
+        <button onclick="window.location.href='mainpage';">돌아가기</button>
+    </div>
+
+
+    <div id="cards-box" class="area-read">
+        <div class="card">
+            <!-- date/username 영역 -->
+            <div class="metadata">
+                <div class="date">
+                    October 10, 2020
+                </div>
+                <div class="username">
+                    anonymous
+                </div>
+            </div>
+            <!-- contents 조회/수정 영역-->
+            <div class="contents">
+
+            </div>
+            <!-- 버튼 영역-->
+            <div id="${id}" class="footer">
+                <img class="icon-start-edit" src="/images/edit.png" alt="" onclick="editSchedule('${id}')">
+                <img class="icon-delete" src="/images/delete.png" alt="" onclick="deleteSchedule('${id}')">
+                <img class="icon-end-edit" src="/images/done.png" alt="" onclick="submitEdit('${id}')">
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>

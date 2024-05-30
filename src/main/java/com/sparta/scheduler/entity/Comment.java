@@ -21,7 +21,7 @@ public class Comment {
     private String content;
 
     @Column(nullable = false)
-    private String userId;
+    private String username;
 
     @Column(nullable = false)
     private Long scheduleId;
@@ -36,7 +36,7 @@ public class Comment {
 
     public Comment(CommentRequestDto commentRequestDto) {
         this.content = commentRequestDto.getContent();
-        this.userId = commentRequestDto.getUserId();
+        this.username = commentRequestDto.getUsername();
         this.scheduleId = commentRequestDto.getScheduleId();
         this.createdAt = commentRequestDto.getCreatedAt();
     }
