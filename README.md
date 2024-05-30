@@ -1,6 +1,8 @@
 ```mermaid
 erDiagram
-    User --o{ Schedule
+    User ||--o{ Schedule 
+    Schedule ||--o{ Comment 
+
     User {
         Long id
         String username
@@ -9,7 +11,7 @@ erDiagram
         UserRoleEnum role
         LocalDateTime createdAt
     }
-    Schedule --o{ Comment
+
     Schedule {
         Long id
         String title
@@ -18,6 +20,7 @@ erDiagram
         String password
         LocalDateTime createdAt
     }
+
     Comment {
         Long id
         String content
@@ -25,4 +28,5 @@ erDiagram
         Long scheduleId
         LocalDateTime createdAt
     }
+
 ```
